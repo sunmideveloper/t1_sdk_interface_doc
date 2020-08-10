@@ -1,622 +1,621 @@
-## **快速集成**
+## **Quick Integration**
 
-- 直接将jar包导入到项目中或在Android Studio的app module下的build.gradle文件中声明
+-Import the jar package directly into the project or declare it in the build.gradle file under the app module of Android Studio
 ```
 dependencies {
-    compile 'com.sunmi:DS_Lib:1.0.2'
-    compile 'com.google.code.gson:gson:2.6.2'//gson任意版本
+    compile'com.sunmi:DS_Lib:1.0.2'
+    compile'com.google.code.gson:gson:2.6.2'//gson any version
 }
 ```
-- 在清单文件AndroidMainfest.xml的<application>节点下配置以下声明
+-Configure the following declaration under the <application> node of the manifest file AndroidMainfest.xml
 ```
 <application>
 ....
         <receiver
             android:name="sunmi.ds.MsgReceiver">
-            <intent-filter >
+            <intent-filter>
                 <action android:name="com.sunmi.hcservice"></action>
                 <action android:name="com.sunmi.hcservice.status"></action>
             </intent-filter>
         </receiver>
 </application>
 ```
-- 初始化SDK
+-Initialize SDK
 ```
 DSKernel mDSKernel = DSKernel.newInstance();
 mDSKernel.init(context, mConnCallback);
 mDSKernel.addReceiveCallback(mReceiveCallback);
 ```
-- 示例见Demo：
-*DSC：主屏程序*
-*DSD : 副屏程序*
+-See Demo for examples:
+*DSC: main screen program*
+*DSD: Secondary screen program*
 
-## **SDK支持的发送类型**
-- String类型的数据（一个json格式的字符串、一段文字信息等...）
-- 单个文件（SD卡已存在的文件）
-- 单个文件+String类型的数据
-- 多个文件+String类型的数据
+## **Send Type Supported by SDK**
+-String type data (a string in json format, a piece of text information, etc...)
+-Single file (file that already exists on the SD card)
+-Single file + String type data
+-Multiple files + String type data
 
-## **关键类说明**
+## **Key Class Description**
 <---
-#### **包 sunmi.ds**
-##### **DSKernel类**：SDK核心类，该类暴露了向副屏发送数据、初始化SDK的函数
+#### **Package sunmi.ds**
+##### **DSKernel class**: SDK core class, this class exposes functions for sending data to the secondary screen and initializing the SDK
 + **newInstance(): DSKernel**
 ```
-说明：实例化DSKernel类的静态函数。
+Description: Instantiate the static function of the DSKernel class.
 ```
 
 
 + **getDSDPackageName(): String**
 ```
-说明：获取副屏接收数据的app包名的静态函数。
-返回值：packageName，副屏负责接收数据的App包名
+Description: Get the static function of the app package name of the data received by the secondary screen.
+Return value: packageName, the name of the App package responsible for receiving data on the secondary screen
 ```
 
 
 + **init(Context contetx, IConnectionCallback stateCallback, String vicePackageName): void**
 ```
-说明：初始化SDK。
-参数：
-contetx：android上下文对象。
-stateCallback：与副屏的连接状态回调。
-vicePackageName：副屏接收数据的app包名，传null或空字符串则默认接收数据的app为Sunmi的副屏默认App。
+Description: Initialize the SDK.
+parameter:
+contetx: android context object.
+stateCallback: The connection state callback with the secondary screen.
+vicePackageName: The name of the app package for receiving data on the secondary screen. If you pass a null or empty string, the default app that receives data is Sunmi's default secondary screen app.
 ```
 
 
 + **init(Context contetx, IConnectionCallback stateCallback): void**
 ```
-说明：初始化SDK。
-参数：
-contetx：android上下文对象。
-stateCallback：与副屏的连接状态回调。
+Description: Initialize the SDK.
+parameter:
+contetx: android context object.
+stateCallback: The connection state callback with the secondary screen.
 ```
 
 
 + **isConnected(): boolean**
 ```
-说明：判断双屏通讯连接是否畅通
-返回值：isConn  true为畅通，false为断开。
+Description: Determine whether the dual-screen communication connection is smooth
+Return value: isConn true means unblocked, false means disconnected.
 ```
 
 
 + **sendData(DataPacket pack): void**
 ```
-说明：发送数据。
-参数：
-pack：DataPacket类型的对象，封装了要发送的数据。
+Description: Send data.
+parameter:
+pack: An object of DataPacket type that encapsulates the data to be sent.
 ```
 
 
 + **sendCMD(String recePackageName, String cmd, long fileId, ISendCallback callback): void**
 ```
-说明：发送CMD命令包，可指定要使用的缓存文件id。
-参数：
-recePackName：接收端包名。
-cmd：命令。
-fileId：要使用的缓存文件id，如果没有则传0。
-callback：发送结果回调。
+Description: Send the CMD command package, you can specify the cache file id to be used.
+parameter:
+recePackName: Receiver package name.
+cmd: command.
+fileId: The id of the cache file to be used, if not, pass 0.
+callback: Send result callback.
 ```
 
 
 + **sendCMD(DataPacket dataPacket): void**
 ```
-说明：发送CMD命令包，可指定要使用的缓存文件id。
-参数：
-dataPacket：CMD类型数据包。
+Description: Send the CMD command package, you can specify the cache file id to be used.
+parameter:
+dataPacket: CMD type data packet.
 ```
 
 
 
 + **sendQuery(DataPacket mPack, QueryCallback callback): void**
 ```
-说明：发送数据，向副屏发送查询数据包时使用。
-举例：在用户协议层，主屏向副屏发送一个表示查询副屏亮度的Query数据包，副屏App收到后获取亮度再调用
-sendResult(long queryId)函数向主屏发回一个携带亮度的结果数据包，此Result数据包的queryId必须与Query
-数据包的taskId一致，主屏才能识别到是之前的查询结果。
-注意：使用QueryCallback接收结果数据包时，通过addReceiveCallback()注册的回调实例将不会被调用。
-参数：
-pack：DataPacket类型的对象，封装了要发送的数据。
-callback 查询结果回调
+Description: Send data, used when sending query data packet to the secondary screen.
+Example: At the user protocol layer, the main screen sends a Query packet indicating the brightness of the secondary screen to the secondary screen, and the secondary screen App gets the brightness after receiving it and then calls it
+The sendResult(long queryId) function sends back a result data packet carrying brightness to the main screen. The queryId of this Result data packet must be the same as that of the Query
+If the taskId of the data packet is the same, the main screen can recognize the previous query result.
+Note: When using QueryCallback to receive the result packet, the callback instance registered by addReceiveCallback() will not be called.
+parameter:
+pack: An object of DataPacket type that encapsulates the data to be sent.
+callback Query result callback
 ```
 
 
 + **sendQuery(String recePackageName, String queryStr, ISendCallback sendCallback, QueryCallback callback): void**
 ```
-说明：发送数据，向副屏发送查询数据包时使用。
-举例：在用户协议层，主屏向副屏发送一个表示查询副屏亮度的Query数据包，副屏App收到后获取亮度再调用
-sendResult(long queryId)函数向主屏发回一个携带亮度的结果数据包，此Result数据包的queryId必须与Query
-数据包的taskId一致，主屏才能识别到是之前的查询结果。
-注意：使用QueryCallback接收结果数据包时，通过addReceiveCallback()注册的回调实例将不会被调用。
-参数：
-recePackageName：接收端包名。
-queryStr：要携带的字符串数据
-sendCallback：发送结果回调
-callback：查询结果回调
+Description: Send data, used when sending query data packet to the secondary screen.
+Example: At the user protocol layer, the main screen sends a Query packet indicating the brightness of the secondary screen to the secondary screen, and the secondary screen App gets the brightness after receiving it and then calls it
+The sendResult(long queryId) function sends back a result data packet carrying brightness to the main screen. The queryId of this Result data packet must be the same as that of the Query
+If the taskId of the data packet is the same, the main screen can recognize the previous query result.
+Note: When using QueryCallback to receive the result packet, the callback instance registered by addReceiveCallback() will not be called.
+parameter:
+recePackageName: Receiver package name.
+queryStr: string data to be carried
+sendCallback: Send result callback
+callback: query result callback
 ```
 
 
 + **sendResult(String recePackageName, String resultStr, long queryId, ISendCallback sendCallback): void**
 ```
-说明：发送Result数据包。
-参数：
-recePackName：接收端包名。
-resultStr：查询结果。
-queryId：Query数据包的taskId。
-sendCallback：发送结果回调。
+Description: Send the Result packet.
+parameter:
+recePackName: Receiver package name.
+resultStr: query result.
+queryId: taskId of the Query packet.
+sendCallback: Send result callback.
 ```
 
 
 + **sendFile(String recePackName, String filePath, ISendCallback callback): long**
 ```
-说明：发送文件。
-参数：
-recePackName：副屏接收的app package name。
-filePath：文件路径。
-callback：发送结果回调。
-返回值：taskId，维护此任务Id直至收到发送成功的回调时可以向副屏发送指令对文件做自定义操作，比如：显示图片、打开文件等操作。
-注意：文件传输到副屏以后会被缓存起来并且与返回的taskId形成映射关系，若想长期复用该文件则应将taskId持久化维护起来。
+Description: Send files.
+parameter:
+recePackName: App package name received by the secondary screen.
+filePath: file path.
+callback: Send result callback.
+Return value: taskId. When maintaining this task Id until the callback of successful sending is received, you can send instructions to the secondary screen to perform custom operations on the file, such as displaying pictures, opening files, etc.
+Note: After the file is transferred to the secondary screen, it will be cached and form a mapping relationship with the returned taskId. If you want to reuse the file for a long time, you should maintain the taskId persistently.
 ```
 
 
 + **sendFile(String recePackName, String msg, String filePath, ISendCallback callback): long**
 ```
-说明：发送一个文件+String类型的数据
-参数：
-recePackName：副屏接收的app package name。
-msg：String类型的数据，例如：一个json格式的字符串、一段文字信息等...
-filePath：文件路径。
-callback：发送结果回调。
-返回值：taskId，维护此任务Id直至收到发送成功的回调时可以向副屏发送指令对文件做自定义操作，比如：显示图片、打开文件等操作。
-注意：文件传输到副屏以后会被缓存起来并且与返回的taskId形成映射关系，若想长期复用该文件则应将taskId持久化维护起来。
+Description: Send a file + String type data
+parameter:
+recePackName: App package name received by the secondary screen.
+msg: String type data, for example: a string in json format, a piece of text information, etc...
+filePath: file path.
+callback: Send result callback.
+Return value: taskId. When maintaining this task Id until the callback of successful sending is received, you can send instructions to the secondary screen to perform custom operations on the file, such as displaying pictures, opening files, etc.
+Note: After the file is transferred to the secondary screen, it will be cached and form a mapping relationship with the returned taskId. If you want to reuse the file for a long time, you should maintain the taskId persistently.
 ```
 
 
 + **sendFiles(String recePackName, String msg, List<String> files, ISendFilesCallback callback): long**
 ```
-说明：发送多个文件+String类型的数据
-参数：
-recePackName：副屏接收的app package name。
-msg：String类型的数据，例如：一个json格式的字符串、一段文字信息等...
-files：文件路径集合。
-callback：多文件发送结果回调。
-返回值：taskId，维护此任务Id直至收到发送成功的回调时可以向副屏发送指令对文件做自定义操作，比如：显示图片、打开文件等操作。
-注意：文件传输到副屏以后会被缓存起来并且与返回的taskId形成映射关系，若想长期复用该文件则应将taskId持久化维护起来。
+Description: Send multiple files + String type data
+parameter:
+recePackName: App package name received by the secondary screen.
+msg: String type data, for example: a string in json format, a piece of text information, etc...
+files: file path collection.
+callback: callback of multi-file sending result.
+Return value: taskId. When maintaining this task Id until the callback of successful sending is received, you can send instructions to the secondary screen to perform custom operations on the file, such as displaying pictures, opening files, etc.
+Note: After the file is transferred to the secondary screen, it will be cached and form a mapping relationship with the returned taskId. If you want to reuse the file for a long time, you should maintain the taskId persistently.
 ```
 
 
 + **checkFileExist(long fileId, final ICheckFileCallback callback): void**
 ```
-说明：检查fileId对应的文件在副屏是否存在
-参数：
-fileId：文件Id。
-callback：检查结果回调。
+Description: Check whether the file corresponding to fileId exists on the secondary screen
+parameter:
+fileId: File Id.
+callback: Check the result callback.
 ```
 
 
 
 + **addConnCallback(IConnectionCallback callback): void**
 ```
-说明：注册一个监听连接的回调，可注册多个。
-参数：
-stateCallback：与副屏的连接状态回调。
+Description: Register a callback for listening connection, and you can register multiple ones.
+parameter:
+stateCallback: The connection state callback with the secondary screen.
 ```
 
 
 + **removeConnCallback(IConnectionCallback callback): void**
 ```
-说明：移除监听连接的回调。
-参数：
-stateCallback：与副屏的连接状态回调。
+Description: Remove the callback for listening connection.
+parameter:
+stateCallback: The connection state callback with the secondary screen.
 ```
 
 
 + **checkConnection(): void**
 ```
-说明：检测与副屏的连接状态，有结果会回调注册的IConnectionCallback。
+Description: Detect the connection status with the secondary screen, if there is a result, the registered IConnectionCallback will be called back.
 ```
 
 
 + **addReceiveCallback(IReceiveCallback receiveCallback): void**
 ```
-说明：注册数据接收回调，可注册多个。
-参数：
-receiveCallback：接收端用于接收发送端数据的回调接口。
+Description: Register data receiving callback, you can register multiple.
+parameter:
+receiveCallback: The callback interface used by the receiver to receive data from the sender.
 ```
 
 
 + **removeReceiveCallback(IReceiveCallback receiveCallback): void**
 ```
-说明：移除数据接收回调。
-参数：
-receiveCallback：要注销的回调实例。
+Description: Remove the data receiving callback.
+parameter:
+receiveCallback: The callback instance to be cancelled.
 ```
 ---
-##### **FilesManager类**：持久化维护缓存接收到的文件，以发送文件任务的taskId为key缓存DSFile、DSFiles。
+##### **FilesManager class**: persistently maintain and cache the received files, and cache DSFile and DSFiles with the taskId of the file sending task as the key.
 + **getFile(Long taskId): DSFile**
 ```
-说明：根据任务ID获取文件。
-参数：
-taskId：文件对应的任务ID。
+Description: Obtain files based on task ID.
+parameter:
+taskId: The task ID corresponding to the file.
 ```
 
 
 + **getFiles(Long taskId): DSFiles**
 ```
-说明：根据任务ID获取多个文件。
-参数：
-taskId：文件对应的任务ID。
+Description: Obtain multiple files based on the task ID.
+parameter:
+taskId: The task ID corresponding to the file.
 ```
 --->
-
 <---
-#### **包 sunmi.ds.callback**
-##### **IReceiveCallback类**：接收数据时的回调接口。
+#### **Package sunmi.ds.callback**
+##### **IReceiveCallback class**: The callback interface when receiving data.
 + **onReceiveData(DSData data): void**
 ```
-说明：接收到数据时的回调。
-参数：
-data：接收到的数据
+Description: Callback when data is received.
+parameter:
+data: received data
 ```
 
 
 + **onReceiveFile(DSFile file): void**
 ```
-说明：接收到单个文件时的回调。
-参数：
-file：接收到的文件
+Description: The callback when a single file is received.
+parameter:
+file: the received file
 ```
 
 
 + **onReceiveFiles(DSFiles files): void**
 ```
-说明：接收到>=1个文件+一段String类型数据时的回调。
-参数：
-files：接收到的文件+String数据
+Description: Callback when receiving >=1 file + a piece of String type data.
+parameter:
+files: received file + String data
 ```
 
 
 + **onReceiveCMD(DSData cmd): void**
 ```
-说明：接收到CMD类型数据时的回调。
-参数：
-cmd：接收到的CMD类型的数据
+Description: Callback when CMD type data is received.
+parameter:
+cmd: CMD type data received
 ```
 ---
 
 
-##### **QueryCallback类**：接收到查询结果数据包时的回调。
+##### **QueryCallback class**: the callback when the query result packet is received.
 + **onReceiveData(DSData data): void**
 ```
-说明：接收到结果数据包时的回调。
-参数：
-data：接收到的数据
+Description: The callback when the result packet is received.
+parameter:
+data: received data
 ```
 ---
 
-##### **IConnectionCallback类**：双屏通讯连接状态的回调接口，所有回调函数都运行在子线程。
+##### **IConnectionCallback class**: The callback interface of the dual-screen communication connection status, all callback functions run in the child thread.
 + **onDisConnect(): void**
 ```
-说明：连接断开时的回调。
+Description: Callback when the connection is disconnected.
 ```
 
 
 + **onConnected(ConnState state): void**
 ```
-说明：连接状态更新时回调。连接状态分为3种：1.与本地service链接正常、2.与副屏service连接正常（处于这种状态下就可以向副屏发送数据了）、3.与副屏APP连接正常。
-参数：
-state：连接状态
+Description: Call back when the connection status is updated. The connection status is divided into 3 types: 1. The connection with the local service is normal, 2. The connection with the secondary screen service is normal (in this state, you can send data to the secondary screen), 3. The connection with the secondary screen APP is normal.
+parameter:
+state: connection state
 ```
 ---
 
 
 
-##### **ICheckFileCallback类**：检查文件结果回调接口。
+##### **ICheckFileCallback class**: Check file result callback interface.
 + **onCheckFail(): void**
 ```
-说明：检查失败(通讯失败)。
+Description: Check failed (communication failure).
 ```
 
 
 + **onResult(boolean exist): boolean**
 ```
-说明：检查失败(通讯失败)。
-参数：
-exist：true表示存在，false表示不存在。
+Description: Check failed (communication failure).
+parameter:
+exist: true means it exists, false means it does not exist.
 ```
 ---
 
-##### **IConnectionCallback类**：双屏通讯连接状态的回调接口，所有回调函数都运行在子线程。
+##### **IConnectionCallback class**: The callback interface of the dual-screen communication connection status, all callback functions run in the child thread.
 + **onDisConnect(): void**
 ```
-说明：连接断开时的回调。
+Description: Callback when the connection is disconnected.
 ```
 
 
 + **onConnected(ConnState state): void**
 ```
-说明：连接状态更新时回调。连接状态分为3种：1.与本地service链接正常、2.与副屏service连接正常（处于这种状态下就可以向副屏发送数据了）、3.与副屏APP连接正常。
-参数：
-state：连接状态
+Description: Call back when the connection status is updated. The connection status is divided into 3 types: 1. The connection with the local service is normal, 2. The connection with the secondary screen service is normal (in this state, you can send data to the secondary screen), 3. The connection with the secondary screen APP is normal.
+parameter:
+state: connection state
 ```
 ---
 
 
-##### **ISendCallback类**：发送String数据或单个文件的回调接口，所有回调函数都运行在子线程。
+##### **ISendCallback class**: The callback interface for sending String data or a single file, all callback functions run in child threads.
 + **onSendSuccess(long taskId): void**
 ```
-说明：发送成功时的回调。
-taskId：任务Id，对应发送的数据或文件
+Description: Callback when sending successfully.
+taskId: task Id, corresponding to the sent data or file
 ```
 
 
 + **onSendFail(int errorId, String errorInfo): void**
 ```
-说明：发送失败时的回调。
-参数：
-errorId：错误识别码。
-errorInfo：错误描述。
+Description: Callback when sending fails.
+parameter:
+errorId: Error identification code.
+errorInfo: error description.
 ```
 
 
 + **onSendProcess(long totle, long sended): void**
 ```
-说明：发送进度的回调。
-参数：
-totle：数据的总大小，单位：byte。
-sended：已发送的数据大小，单位：byte
+Description: Callback of sending progress.
+parameter:
+totle: the total size of the data, unit: byte.
+sented: the size of the sent data, unit: byte
 ```
 ---
 
 
-##### **ISendFilesCallback类**：发送>=1个文件+String数据的回调接口，所有回调函数都运行在子线程。
+##### **ISendFilesCallback class**: a callback interface for sending >=1 file + String data, all callback functions run in sub-threads.
 + **onAllSendSuccess(long fileId): void**
 ```
-说明：多个文件都发送成功时的回调。
-fileId：任务Id也是缓存在副屏文件对应的fileId。
+Description: Callback when multiple files are sent successfully.
+fileId: The task Id is also the fileId corresponding to the file cached in the secondary screen.
 ```
 
 + **onSendSuccess(String path, long taskId): void**
 ```
-说明：某一个文件发送成功时的回调。
-taskId：任务Id，发送多个文件都属于同一任务所以taskId都相同。
+Description: Callback when a certain file is sent successfully.
+taskId: Task Id, sending multiple files belong to the same task, so the taskId is the same.
 ```
 
 
 + **onSendFail(int errorId, String errorInfo): void**
 ```
-说明：发送String数据失败时的回调，String数据发送失败后不会继续发送文件。
-参数：
-errorId：错误识别码。
-errorInfo：错误描述。
+Description: Callback when sending String data fails, the file will not continue to be sent after String data sending fails.
+parameter:
+errorId: Error identification code.
+errorInfo: error description.
 ```
 
 
 + **onSendFileFaile(String path, int errorId, String errorInfo): void**
 ```
-说明：发送某一个文件失败时的回调。
-参数：
-path：发送失败对应的文件路径。
-errorId：错误识别码。
-errorInfo：错误描述。
+Description: Callback when sending a file fails.
+parameter:
+path: The file path corresponding to the failed sending.
+errorId: Error identification code.
+errorInfo: error description.
 ```
 
 
 + **onSendProcess(String path, long totle, long sended): void**
 ```
-说明：发送某个文件的进度回调。
-参数：
-path：对应的文件路径。
-totle：数据的总大小，单位：byte。
-sended：已发送的数据大小，单位：byte
+Description: The progress callback of sending a certain file.
+parameter:
+path: the corresponding file path.
+totle: the total size of the data, unit: byte.
+sented: the size of the sent data, unit: byte
 ```
 --->
 
 <---
-#### **包 sunmi.ds.data**
-##### **DataPacket类**：封装了发送数据和发送回调，调用DSKernel类的sendData(DataPacket pack)函数时需要的参数实体类。
+#### **Package sunmi.ds.data**
+##### **DataPacket class**: Encapsulates sending data and sending callbacks, the parameter entity class required when calling the sendData(DataPacket pack) function of the DSKernel class.
 ---
 
 
-##### **DataPacket.Builder类**：DataPacket的builder类。
+##### **DataPacket.Builder class**: The builder class of DataPacket.
 + **Builder(DSData.DataType dataType)**
 ```
-说明：构造函数。
-参数：
-dataType：要build的数据类型。
+Description: Constructor.
+parameter:
+dataType: The type of data to be built.
 ```
 
 
 + **recPackName(String recPackName): Builder**
 ```
-说明：指定接收数据的app包名。
-参数：
-recPackName：接收数据的app包名。
-返回值：Builder实例
+Description: Specify the app package name for receiving data.
+parameter:
+recPackName: The app package name that receives the data.
+Return value: Builder instance
 ```
 
 
 + **data(String data): Builder**
 ```
-说明：指定要发送的数据。
-参数：
-data：要发送的String数据。
-返回值：Builder实例
+Description: Specify the data to be sent.
+parameter:
+data: String data to be sent.
+Return value: Builder instance
 ```
 
 
 + **taskId(long taskId): Builder**
 ```
-说明：指定任务Id，不指定则自动生成。
-参数：
-taskId：任务Id。
-返回值：Builder实例
+Note: Specify the task Id, if not specified, it will be automatically generated.
+parameter:
+taskId: Task Id.
+Return value: Builder instance
 ```
 
 
 + **fileId(long fileId): Builder**
 ```
-说明：指定缓存文件Id。
-参数：
-fileId：缓存文件Id。
-返回值：Builder实例
+Description: Specify the cache file Id.
+parameter:
+fileId: cache file Id.
+Return value: Builder instance
 ```
 
 
 + **queryId(long queryId): Builder**
 ```
-说明：指定Query数据包的Id。
-参数：
-fileId：Query数据包的Id。
-返回值：Builder实例
+Description: Specify the Id of the Query packet.
+parameter:
+fileId: Id of the Query packet.
+Return value: Builder instance
 ```
 
 
 
 + **isReport(boolean isReport): Builder**
 ```
-说明：指定是否需要结果回调。
-参数：
-isReport：是否需要结果回调。
-返回值：Builder实例
+Description: Specify whether the result callback is required.
+parameter:
+isReport: Whether the result callback is required.
+Return value: Builder instance
 ```
 
 
 + **addCallback(ISendCallback callback): Builder**
 ```
-说明：设置发送结果的回调实例。
-参数：
-callback：发送结果的回调实例。
-返回值：Builder实例
+Description: Set the callback instance of the sending result.
+parameter:
+callback: The callback instance of the sending result.
+Return value: Builder instance
 ```
 
 
 + **build(): DataPacket**
 ```
-说明：build一个DataPacket实例。
-返回值：DataPacket实例
+Description: Build a DataPacket instance.
+Return value: DataPacket instance
 ```
 ---
 
 
-##### **DSData类**：双屏通讯的数据封装。
+##### **DSData class**: Data package for dual-screen communication.
 + **sender: String**
 ```
-说明：发送端app包名。
+Description: The sender app package name.
 ```
 
 
 + **taskId: long**
 ```
-说明：任务Id。
+Description: Task Id.
 ```
 
 
 + **fileId: long**
 ```
-说明：缓存文件Id。
+Description: Cache file Id.
 ```
 
 
 + **queryId: long**
 ```
-说明：Query数据包的任务Id。
+Description: Task Id of the Query packet.
 ```
 
 
 + **dataType: DataType**
 ```
-说明：数据类型。
+Description: Data type.
 ```
 
 
 + **data: String**
 ```
-说明：要发送的数据。
+Description: The data to be sent.
 ```
 ---
 
 
-##### **DSData.DataType枚举类**：数据类型描述封装。
+##### **DSData.DataType enumeration class**: Data type description package.
 + **DATA: DataType**
 ```
-说明：表示数据。
+Description: Represents data.
 ```
 
 
 + **FILE: DataType**
 ```
-说明：表示文件。
+Description: Represents a file.
 ```
 
 
 + **CMD: DataType**
 ```
-说明：表示命令。
+Description: Indicates a command.
 ```
 
 
 + **typeCode: int**
 ```
-说明：类型code。
+Description: Type code.
 ```
 ---
 
 
-##### **DSFile类**：接收端接收的文件类。
+##### **DSFile class**: the file class received by the receiver.
 + **sender: String**
 ```
-说明：发送端app包名。
+Description: The sender app package name.
 ```
 
 
 + **path: String**
 ```
-说明：接收到的文件路径。
+Description: The received file path.
 ```
 
 
 + **taskId: long**
 ```
-说明：任务Id。
+Description: Task Id.
 ```
 ---
 
 
-##### **DSFiles类**：接收端接收的多文件类。
+##### **DSFiles class**: Multi-file class received by the receiver.
 + **filesDescribe: FilesDescribe**
 ```
-说明：封装了接收到的String数据与文件数量。
+Description: encapsulates the number of String data and files received.
 ```
 
 
 + **sender: String**
 ```
-说明：发送端app包名。
+Description: The sender app package name.
 ```
 
 
 + **files: List<DSFile>**
 ```
-说明：接收到的文件路径集合。
+Description: The received file path collection.
 ```
 
 
 + **taskId: long**
 ```
-说明：任务Id。
+Description: Task Id.
 ```
 ---
 
 
-##### **FilesDescribe类**：封装了接收到的String数据与文件数量。
+##### **FilesDescribe class**: encapsulates the received String data and the number of files.
 + **msg: String**
 ```
-说明：接收到的String数据。
+Description: String data received.
 ```
 
 
 + **fileCount: int**
 ```
-说明：文件数量。
+Description: Number of files.
 ```
 --->
